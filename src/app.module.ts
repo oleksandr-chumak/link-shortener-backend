@@ -1,11 +1,16 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { corsOptions, DATABASE_CONFIG } from '@common/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule, UserModule } from './modules';
+import { AuthModule, LinkModule, UserModule } from './modules';
 import * as cors from 'cors';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(DATABASE_CONFIG), UserModule, AuthModule],
+  imports: [
+    TypeOrmModule.forRoot(DATABASE_CONFIG),
+    UserModule,
+    AuthModule,
+    LinkModule,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

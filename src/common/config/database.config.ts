@@ -1,16 +1,11 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import {
+  ShortLinkEntity,
   UserAuthProviderEntity,
   UserCredentialsEntity,
   UserEntity,
-} from '../../modules/user/entities';
+} from '../../modules';
 import * as process from 'process';
-console.log(process.env.MYSQL_DATABASE);
-console.log(process.env.PORT);
-console.log(process.env.PORT);
-console.log(process.env.PORT);
-console.log(process.env.PORT);
-console.log(process.env.PORT);
 
 export const DATABASE_CONFIG: TypeOrmModuleOptions = {
   type: 'mysql',
@@ -19,7 +14,12 @@ export const DATABASE_CONFIG: TypeOrmModuleOptions = {
   username: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE,
-  entities: [UserEntity, UserCredentialsEntity, UserAuthProviderEntity],
+  entities: [
+    UserEntity,
+    UserCredentialsEntity,
+    UserAuthProviderEntity,
+    ShortLinkEntity,
+  ],
   migrationsTableName: 'migration',
   synchronize: true,
   ssl: process.env.NODE_ENV === 'production',
