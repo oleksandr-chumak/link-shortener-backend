@@ -24,6 +24,51 @@ export class DateService {
     return days;
   }
 
+  getDateRanges(): Date[] {
+    const dates = this.getDates();
+    const dateRanges = [
+      dates.tomorrow,
+      dates.today,
+      dates.yesterday,
+      dates.lastWeek,
+      dates.lastMonth,
+      dates.lastYear,
+    ];
+    return dateRanges;
+  }
+
+  calculateDateCountWithPrevCounts(datesCounts: number[]) {
+    let acc = 0;
+    const transformedDateCounts = datesCounts.map((dateCount) => {
+      const dateCountWithPrevDateCount =
+        dateCount !== 0 ? dateCount + acc : dateCount;
+      acc += dateCount;
+      return dateCountWithPrevDateCount;
+    });
+    return transformedDateCounts;
+  }
+
+  createDateObjectByValueAndFilter(dateCount: number[]) {
+    const dateName: DateName[] = [
+      'today',
+      'yesterday',
+      'lastWeek',
+      'lastMonth',
+      'lastYear',
+    ];
+    const filteredDateRange = [];
+    for (let i = 0; i < dateName.length; i++) {
+      const count = dateCount[i];
+      if (count !== 0) {
+        filteredDateRange.push({
+          value: dateName[i],
+          count: count,
+        });
+      }
+    }
+    return filteredDateRange;
+  }
+
   private getDateWithOffset(offset: number): Date {
     const date = new Date();
     date.setHours(0, 0, 0, 0);

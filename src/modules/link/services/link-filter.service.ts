@@ -41,19 +41,27 @@ export class LinkFilterService {
 
   private async getDate(userId, query: GetFilterDto) {
     const { date: _, ...queryWithoutCurrentFilter } = query;
-    const dates = await this.shortLinkRepository.getDate(
-      userId,
-      queryWithoutCurrentFilter,
+
+    const [tomorrow, ...dateRanges] = this.dateService.getDateRanges();
+
+    const dateCountQuery = dateRanges.map((date, index, array) => {
+      const queryBuilder =
+        this.shortLinkRepository.createBaseQueryBuilder(userId);
+      return this.shortLinkRepository.getCountForDate(
+        queryBuilder,
+        date,
+        array[index - 1] || tomorrow,
+      );
+    });
+
+    const dateCounts = await Promise.all(dateCountQuery);
+
+    const transformedDatesCounts =
+      this.dateService.calculateDateCountWithPrevCounts(dateCounts);
+
+    return this.dateService.createDateObjectByValueAndFilter(
+      transformedDatesCounts,
     );
-    const transformedDates = [];
-    for (const datesKey in dates) {
-      const transformedDate = {
-        value: datesKey,
-        count: dates[datesKey],
-      };
-      transformedDates.push(transformedDate);
-    }
-    return transformedDates.filter((date) => date.count !== 0);
   }
 
   private async getStatistics(userId: string, query: GetFilterDto) {

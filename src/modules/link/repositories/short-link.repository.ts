@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { ShortLinkEntity } from '../entities/short-link.entity';
 import { GetFilterDto, GetLinksDto } from '../dto';
-import { FieldEnum, FilterType } from '../types/filter.types';
+import { FieldEnum, FilterType } from '../types';
 
 @Injectable()
 export class ShortLinkRepository extends Repository<ShortLinkEntity> {
@@ -58,37 +58,7 @@ export class ShortLinkRepository extends Repository<ShortLinkEntity> {
     return queryBuilder.getRawMany();
   }
 
-  async getDate(userId: string, query: Omit<GetFilterDto, 'date'>) {
-    const { tomorrow, today, yesterday, lastWeek, lastMonth, lastYear } =
-      this.calculateFutureDates();
-
-    const dateRanges = [today, yesterday, lastWeek, lastMonth, lastYear];
-
-    console.log(dateRanges);
-
-    const dateCountQuery = dateRanges.map((date, index, array) => {
-      const queryBuilder = this.createBaseQueryBuilder(userId);
-      return this.getCountForDate(
-        queryBuilder,
-        date,
-        array[index - 1] || tomorrow,
-      );
-    });
-
-    const dateCounts = await Promise.all(dateCountQuery);
-
-    const transformedDateCounts =
-      this.calculateDateCountWithPrevCounts(dateCounts);
-    return {
-      today: transformedDateCounts[0],
-      yesterday: transformedDateCounts[1],
-      lastWeek: transformedDateCounts[2],
-      lastMonth: transformedDateCounts[3],
-      lastYear: transformedDateCounts[4],
-    };
-  }
-
-  private getCountForDate(
+  getCountForDate(
     queryBuilder: SelectQueryBuilder<ShortLinkEntity>,
     date: Date,
     prevDate: Date,
@@ -104,9 +74,7 @@ export class ShortLinkRepository extends Repository<ShortLinkEntity> {
       .getCount();
   }
 
-  private createBaseQueryBuilder(
-    userId: string,
-  ): SelectQueryBuilder<ShortLinkEntity> {
+  createBaseQueryBuilder(userId: string): SelectQueryBuilder<ShortLinkEntity> {
     return this.createQueryBuilder('short_link')
       .innerJoin('short_link.originalLink', 'original_link')
       .innerJoin('short_link.status', 'link_status')
@@ -151,45 +119,5 @@ export class ShortLinkRepository extends Repository<ShortLinkEntity> {
         [`values${field}`]: values,
       });
     }
-  }
-
-  private calculateDateCountWithPrevCounts(datesCounts: number[]) {
-    let acc = 0;
-    const transformedDateCounts = datesCounts.map((dateCount) => {
-      const dateCountWithPrevDateCount =
-        dateCount !== 0 ? dateCount + acc : dateCount;
-      acc += dateCount;
-      return dateCountWithPrevDateCount;
-    });
-    return transformedDateCounts;
-  }
-
-  private calculateFutureDates() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-
-    const lastWeek = new Date(today);
-    lastWeek.setDate(today.getDate() - 7);
-
-    const lastMonth = new Date(today);
-    lastMonth.setMonth(today.getMonth() - 1);
-
-    const lastYear = new Date(today);
-    lastYear.setFullYear(today.getFullYear() - 1);
-
-    return {
-      tomorrow,
-      today,
-      yesterday,
-      lastWeek,
-      lastMonth,
-      lastYear,
-    };
   }
 }
