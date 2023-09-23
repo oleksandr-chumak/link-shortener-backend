@@ -6,6 +6,10 @@ import {
   UserEntity,
 } from '../../modules';
 import * as process from 'process';
+import { OriginalLinkEntity } from '../../modules/link/entities/original-link.entity';
+import { LinkStatusEntity } from '../../modules/link/entities/link-status.entity';
+
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 export const DATABASE_CONFIG: TypeOrmModuleOptions = {
   type: 'mysql',
@@ -19,6 +23,8 @@ export const DATABASE_CONFIG: TypeOrmModuleOptions = {
     UserCredentialsEntity,
     UserAuthProviderEntity,
     ShortLinkEntity,
+    OriginalLinkEntity,
+    LinkStatusEntity,
   ],
   migrationsTableName: 'migration',
   synchronize: true,

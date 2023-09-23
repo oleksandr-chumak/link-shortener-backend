@@ -29,7 +29,6 @@ export class PasswordResetController {
   async resetRequest(
     @Body() resetRequestData: ResetPasswordRequestDto,
   ): Promise<Message> {
-    console.log('here');
     const user = await this.userService.findUserByEmail(resetRequestData.email);
     if (!user) {
       throw new UserNotFoundException();
@@ -46,7 +45,6 @@ export class PasswordResetController {
 
   @Post('/reset-password')
   async resetPassword(@Body() resetData: ResetPasswordDto): Promise<Message> {
-    console.log('here');
     if (resetData.newPassword !== resetData.newConfirmPassword) {
       throw new PasswordNotMatchException();
     }

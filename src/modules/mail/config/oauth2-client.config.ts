@@ -6,4 +6,3 @@ export const OAuth2ClientConfig: OAuth2ClientOptions = {
   clientSecret: process.env.CLIENT_SECRET,
   redirectUri: 'https://developers.google.com/oauthplayground',
 };
-console.log(OAuth2ClientConfig);

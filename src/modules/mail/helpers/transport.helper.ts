@@ -18,7 +18,6 @@ export class TransportHelper {
 
   public async setTransport() {
     const accessToken = await this.getAccessToken();
-    console.log(accessToken);
     const config: Options = {
       service: 'gmail',
       auth: {

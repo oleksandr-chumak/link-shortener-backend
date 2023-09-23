@@ -1,2 +1,2 @@
 export * from './link.module';
-export * from './short-link.entity';
+export * from './entities/short-link.entity';

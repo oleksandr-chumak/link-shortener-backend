@@ -5,23 +5,24 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ShortLinkDto } from './link.dto';
-import { LinkService } from './link.service';
-import { OnlyAuthorizedGuard } from '../auth/guards';
-import { ICurrentUser } from '../user';
-import { CurrentUser } from '../user/decorators/current-user.decorator';
+import { GetLinksDto, ShortLinkDto } from '../dto';
+import { LinkService } from '../services';
+import { OnlyAuthorizedGuard } from '../../auth/guards';
+import { ICurrentUser } from '../../user';
+import { CurrentUser } from '../../user/decorators/current-user.decorator';
 import { Response } from 'express';
-import { ShortLinkEntity } from './short-link.entity';
+import { ShortLinkEntity } from '../entities/short-link.entity';
 
 @Controller('')
 export class LinkController {
   constructor(private readonly linkService: LinkService) {}
 
   @Post('link/shorten')
-  shortenLink(@Body() body: ShortLinkDto): Promise<string> {
+  async shortenLink(@Body() body: ShortLinkDto): Promise<ShortLinkEntity> {
     const { link } = body;
     return this.linkService.shortenLink(link);
   }
@@ -31,7 +32,7 @@ export class LinkController {
   shortenLinkAuthenticated(
     @Body() body: ShortLinkDto,
     @CurrentUser() user: ICurrentUser,
-  ): Promise<string> {
+  ): Promise<ShortLinkEntity> {
     const { id } = user;
     const { link } = body;
     return this.linkService.shortenLink(link, id);
@@ -41,9 +42,10 @@ export class LinkController {
   @Get('links')
   getUserShortenLinks(
     @CurrentUser() user: ICurrentUser,
-  ): Promise<ShortLinkEntity[]> {
+    @Query() query: GetLinksDto,
+  ) {
     const { id } = user;
-    return this.linkService.getUserShortenLinks(id);
+    return this.linkService.getUserShortenLinks(id, query);
   }
 
   @Get(':code')
@@ -51,11 +53,17 @@ export class LinkController {
     @Param('code') code: string,
     @Res() res: Response,
   ): Promise<void> {
-    const shortenLink = await this.linkService.findShortenLinkByCode(code);
+    const shortenLink = await this.linkService.findShortenLinkByCode(code, {
+      originalLink: true,
+    });
     if (!shortenLink) {
       throw new NotFoundException('link not found');
     }
+    const { protocol, host, pathname, search } = shortenLink.originalLink;
+    const originalLink = protocol + '//' + host + pathname + search;
+
     await this.linkService.increaseClickNumber(shortenLink);
-    res.redirect(shortenLink.original_link);
+
+    res.redirect(originalLink);
   }
 }
